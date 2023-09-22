@@ -1,0 +1,228 @@
+{
+    "step-types": {
+    	"script-module-step": [{
+			"@type-id":"custom.Bloomreach-Send",
+		    "@supports-parallel-execution":"false",
+		    "@supports-site-context":"true",
+		    "@supports-organization-context":"true",
+		    "description":"Send feeds to the Bloomreach REST API. Used for both product feeds and content feeds.",
+		    "module":"int_bloomreach/cartridge/scripts/jobs/blrSendFeeds.js",
+		    "function":"execute",
+		    "transactional":"false",
+		    "timeout-in-seconds":"10000",
+		    "parameters":
+		    {
+		    	"parameter": [{
+		          	"@name":"Enabled",
+		          	"@type":"boolean",
+		          	"@required":"false",
+		          	"@trim":"false",
+		          	"description":"Enable Sending of Product or Content Feed."
+		        }, {
+		          	"@name":"FeedType",
+		          	"@type":"string",
+		          	"@required":"true",
+		          	"@trim":"false",
+		          	"description":"Product or Content Feed",
+		          	"enum-values": {
+		            	"value": [
+		              		"Product",
+		              		"Content"
+		            	]
+					}
+				}, {
+					"@name":"UpdateType",
+					"@type":"string",
+					"@required":"true",
+					"@trim":"false",
+					"description":"Rewrire (PUT) or Update (PATCH) record",
+					"enum-values": {
+						"value": [
+							"PUT",
+							"PATCH"
+					    ]
+					}
+				}]
+		    },
+		    "status-codes": {
+		    	"status":  [{
+		        	"@code": "ERROR",
+		            "description": "Used when the step failed with an error."
+		        }, {
+					"@code": "OK",
+					"description": "Used when the step finished successfully."
+				}]
+			}
+		}, {
+		 	"@type-id":"custom.Bloomreach-Upload",
+		    "@supports-parallel-execution":"false",
+		    "@supports-site-context":"true",
+		    "@supports-organization-context":"true",
+		    "description":"Uploads feeds to the Bloomreach SFTP server. Used for both product feeds and content feeds.",
+		    "module":"int_bloomreach/cartridge/scripts/jobs/blrUploadFeeds.js",
+		    "function":"execute",
+		    "transactional":"false",
+		    "timeout-in-seconds":"10000",
+		    "parameters":
+		    {
+		    	"parameter": [{
+		          	"@name":"Enabled",
+		          	"@type":"boolean",
+		          	"@required":"false",
+		          	"@trim":"false",
+		          	"description":"Enable Upload of Product or Content Feed."
+		        }, {
+		          	"@name":"FeedType",
+		          	"@type":"string",
+		          	"@required":"true",
+		          	"@trim":"false",
+		          	"description":"Product or Content Feed",
+		          	"enum-values": {
+		            	"value": [
+		              		"Product",
+		              		"Content"
+		            	]
+		          	}
+				}]
+		    },
+		    "status-codes": {
+		    	"status":  [{
+		        	"@code": "ERROR",
+		            "description": "Used when the step failed with an error."
+		        }, {
+					"@code": "OK",
+					"description": "Used when the step finished successfully."
+				}]
+			}
+		}, {
+			"@type-id":"custom.Bloomreach-Index",
+			"@supports-parallel-execution":"false",
+			"@supports-site-context":"true",
+			"@supports-organization-context":"true",
+			"description":"Publish Bloomreach index",
+		   	"module":"int_bloomreach/cartridge/scripts/jobs/blrPublishIndex.js",
+			"function":"execute",
+			"transactional":"true",
+			"timeout-in-seconds":"10000",
+			"parameters":
+			{
+			   "parameter": [{
+					"@name":"Enabled",
+					"@type":"boolean",
+					"@required":"false",
+					"@trim":"false",
+					"description":"Enable Publish Index"
+				},{
+					"@name":"FeedType",
+					"@type":"string",
+					"@required":"true",
+					"@trim":"false",
+					"description":"Product or Content Feed",
+					"enum-values": {
+					  "value": [
+							"Product",
+							"Content"
+					  ]
+					}
+			  }]
+		   },
+		   "status-codes": {
+				"status":  [{
+					"@code": "ERROR",
+					"description": "Used when the step failed with an error."
+				}, {
+					"@code": "OK",
+					"description": "Used when the step finished successfully."
+				}]
+			}
+	   	},
+			{
+				"@type-id": "custom.Bloomreach-Content-Feed-Export",
+				"module": "int_bloomreach/cartridge/scripts/jobs/blrContentExport.js",
+				"description": "Generates a Bloomreach Content Feed file for the current site.",
+				"function": "execute",
+				"parameters": {
+					"parameter": [
+						{
+							"@name":"Enabled",
+							"@type":"boolean",
+							"@required":"false",
+							"@trim":"false",
+							"description":"Enable Upload of Product or Content Feed."
+						}
+					]
+				},
+				"status-codes": {
+					"status": [
+						{
+							"@code": "ERROR",
+							"description": "Used when an error occurred."
+						},
+						{
+							"@code": "OK",
+							"description": "Used when everything went well."
+						},
+						{
+							"@code": "WARN",
+							"description": "Used when small, but acceptable problems occurred."
+						}
+					]
+				}
+			}
+		],
+
+        "chunk-script-module-step": [
+            {
+                "@type-id": "custom.Bloomreach-Product-Feed-Export",
+                "@supports-parallel-execution": "false",
+                "@supports-site-context": "true",
+                "@supports-organization-context": "false",
+                "description": "Generates a Bloomreach Product Feed file for the current site.",
+                "module": "int_bloomreach/cartridge/scripts/jobs/blrProductExport.js",
+                "before-step-function": "beforeStep",
+                "read-function": "read",
+                "process-function": "process",
+                "write-function": "write",
+                "after-step-function": "afterStep",
+                "chunk-size": 100,
+                "transactional": "false",
+                "parameters": {
+                    "parameter": [
+						{
+			          		"@name":"Enabled",
+			          		"@type":"boolean",
+			          		"@required":"false",
+			          		"@trim":"false",
+			          		"description":"Enable Generation of Product Feed. Can be used to turn of feed export without disabling the entire job."
+		          		},
+						{
+							"@name":"FeedType",
+							"@type":"string",
+							"@required":"true",
+							"@trim":"false",
+							"description":"Full feed or Delta feed",
+							"enum-values": {
+								"value": [
+									"FullFeed",
+									"DeltaFeed"
+							  	]
+							}
+						}
+					]
+			  	},
+                "status-codes": {
+                    "status": [
+                        {
+                            "@code": "ERROR",
+                            "description": "Used when the step failed with an error."
+                        },
+                        {
+                            "@code": "OK",
+                            "description": "Used when the step finished successfully."
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

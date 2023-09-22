@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns="http://www.demandware.com/xml/impex/services/2014-09-26">
+    <service-credential service-credential-id="bloomreach.http.credential">
+        <url>https://api-staging.connect.bloomreach.com/dataconnect/api/v1/</url>
+        <user-id/>
+        <password/>
+    </service-credential>
+
+	<service-credential service-credential-id="bloomreach.http.suggestions.api">
+        <url>https://staging-suggest.dxpapi.com</url>
+        <user-id/>
+        <password encrypted="true" encryption-type="common.export">s9QCibxw022Liy1WnvF8UTRl2rurFatHXhrVGYVdfzE=</password>
+    </service-credential>
+
+    <service-credential service-credential-id="bloomreach.sftp.sandbox">
+        <url>sftp-staging.connect.bloomreach.com</url>
+        <user-id/>
+        <password/>
+    </service-credential>
+
+    <service-credential service-credential-id="bloomreach.http.search.api">
+        <url>https://staging-core.dxpapi.com</url>
+        <user-id/>
+        <password encrypted="true" encryption-type="common.export">GyAKrI+td0XR7plUiDyvMgLEq5syNGe1wjcvXmP75M0=</password>
+    </service-credential>
+
+    <service-profile service-profile-id="bloomreach.http">
+        <timeout-millis>10000</timeout-millis>
+        <rate-limit-enabled>false</rate-limit-enabled>
+        <rate-limit-calls>0</rate-limit-calls>
+        <rate-limit-millis>0</rate-limit-millis>
+        <cb-enabled>true</cb-enabled>
+        <cb-calls>0</cb-calls>
+        <cb-millis>0</cb-millis>
+    </service-profile>
+
+    <service-profile service-profile-id="bloomreach.sftp">
+        <timeout-millis>1000</timeout-millis>
+        <rate-limit-enabled>false</rate-limit-enabled>
+        <rate-limit-calls>0</rate-limit-calls>
+        <rate-limit-millis>0</rate-limit-millis>
+        <cb-enabled>true</cb-enabled>
+        <cb-calls>3</cb-calls>
+        <cb-millis>2000</cb-millis>
+    </service-profile>
+
+    <service-profile service-profile-id="bloomreach.http.search.api">
+        <timeout-millis>3000</timeout-millis>
+        <rate-limit-enabled>false</rate-limit-enabled>
+        <rate-limit-calls>0</rate-limit-calls>
+        <rate-limit-millis>0</rate-limit-millis>
+        <cb-enabled>true</cb-enabled>
+        <cb-calls>0</cb-calls>
+        <cb-millis>0</cb-millis>
+    </service-profile>
+	
+	<service-profile service-profile-id="bloomreach.http.search.suggestions.api">
+        <timeout-millis>3000</timeout-millis>
+        <rate-limit-enabled>false</rate-limit-enabled>
+        <rate-limit-calls>0</rate-limit-calls>
+        <rate-limit-millis>0</rate-limit-millis>
+        <cb-enabled>true</cb-enabled>
+        <cb-calls>0</cb-calls>
+        <cb-millis>0</cb-millis>
+    </service-profile>
+
+    <service service-id="bloomreach.http.api">
+        <service-type>HTTP</service-type>
+        <enabled>true</enabled>
+        <log-prefix/>
+        <comm-log-enabled>false</comm-log-enabled>
+        <force-prd-enabled>true</force-prd-enabled>
+        <mock-mode-enabled>false</mock-mode-enabled>
+        <profile-id>bloomreach.http</profile-id>
+        <credential-id>bloomreach.http.credential</credential-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="enableIstlMockResponse">false</custom-attribute>
+        </custom-attributes>
+    </service>
+
+    <service service-id="bloomreach.sftp.export">
+        <service-type>SFTP</service-type>
+        <enabled>true</enabled>
+        <log-prefix/>
+        <comm-log-enabled>false</comm-log-enabled>
+        <force-prd-enabled>true</force-prd-enabled>
+        <mock-mode-enabled>false</mock-mode-enabled>
+        <profile-id>bloomreach.sftp</profile-id>
+        <credential-id>bloomreach.sftp.sandbox</credential-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="enableIstlMockResponse">false</custom-attribute>
+        </custom-attributes>
+    </service>
+
+    <service service-id="bloomreach.http.search.api">
+        <service-type>HTTP</service-type>
+        <enabled>true</enabled>
+        <log-prefix/>
+        <comm-log-enabled>true</comm-log-enabled>
+        <force-prd-enabled>true</force-prd-enabled>
+        <mock-mode-enabled>false</mock-mode-enabled>
+        <profile-id>bloomreach.http.search.api</profile-id>
+        <credential-id>bloomreach.http.search.api</credential-id>
+    </service>
+	
+	<service service-id="bloomreach.http.search.suggestions.api">
+        <service-type>HTTP</service-type>
+        <enabled>true</enabled>
+        <log-prefix/>
+        <comm-log-enabled>false</comm-log-enabled>
+        <force-prd-enabled>true</force-prd-enabled>
+        <mock-mode-enabled>false</mock-mode-enabled>
+        <profile-id>bloomreach.http.search.suggestions.api</profile-id>
+        <credential-id>bloomreach.http.suggestions.api</credential-id>
+    </service>
+
+</services>
