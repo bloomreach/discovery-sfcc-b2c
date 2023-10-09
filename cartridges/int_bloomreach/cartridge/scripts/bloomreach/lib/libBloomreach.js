@@ -32,7 +32,18 @@ function getProductAttributes() {
     return result;
 }
 
+/**
+ * Get Bloomreach View ID
+ * @returns {string} - View ID
+ */
+function getViewId() {
+    var currentSession = request.getSession();
+    var currentCurrency = currentSession.getCurrency();
+    return currentCurrency.currencyCode.toLowerCase();
+}
+
 module.exports = {
     getPreference: getPreference,
-    getProductAttributes: getProductAttributes
+    getProductAttributes: getProductAttributes,
+    getViewId: getViewId
 };
