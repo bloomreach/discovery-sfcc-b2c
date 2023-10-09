@@ -1,0 +1,8 @@
+<p>
+    <p class="search-result-autocorrect">
+        ${Resource.msgf('label.query.original', 'search', null, decodeURI(pdict.productSearch.query))}
+    </p>
+    <p class="search-result-autocorrect">
+        ${Resource.msgf('label.query.autocorrect', 'search', null, decodeURI(pdict.productSearch.autoCorrectQuery))}
+    </p>
+</p>

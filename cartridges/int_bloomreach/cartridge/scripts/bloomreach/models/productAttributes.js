@@ -2,6 +2,7 @@
 
 var Site = require('dw/system/Site');
 var Currency = require('dw/util/Currency');
+var CatalogMgr = require('dw/catalog/CatalogMgr');
 var URLUtils = require('dw/web/URLUtils');
 var StringUtils = require('dw/util/StringUtils');
 
@@ -43,6 +44,15 @@ function getCategoryFlatTree(category) {
         categoryTree.push({
             id: currentCategory.ID,
             name: getAttributeValue(currentCategory, 'displayName')
+        });
+    }
+
+    // Add root category to the top of the category tree
+    if (!currentCategory.root) {
+        var rootCategory = CatalogMgr.siteCatalog.root;
+        categoryTree.push({
+            id: rootCategory ? rootCategory.ID : 'root',
+            name: rootCategory ? rootCategory.displayName : 'Root category'
         });
     }
 
@@ -93,6 +103,12 @@ var agregatedValueHanlders = {
     thumb_image: function (product) {
         var imageItem = product.getImage('large'); // large thumbnail
         return imageItem ? StringUtils.trim(imageItem.absURL.toString()) : null;
+    },
+    title: function (product) {
+        return product.name ? product.name.toLowerCase() : product.name;
+    },
+    description: function (product) {
+        return product.longDescription ? product.longDescription.markup.toLowerCase() : null;
     }
 };
 

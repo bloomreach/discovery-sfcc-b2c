@@ -1,0 +1,17 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<script>
+var br_data = br_data || {}; // psa
+<isloop items="${Object.keys(pdict.pixelData)}" var="key">
+    br_data.${key} = "${pdict.pixelData[key]}";
+</isloop>
+
+(function() {
+var brtrk = document.createElement('script');
+brtrk.type = 'text/javascript';
+brtrk.async = true;
+brtrk.src = "//cdn.brcdn.com/v1/br-trk-${pdict.pixelData.acct_id}.js";
+
+var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(brtrk, s);
+})();
+</script>
