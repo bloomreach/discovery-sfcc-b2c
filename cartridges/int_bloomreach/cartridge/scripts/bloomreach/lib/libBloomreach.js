@@ -42,8 +42,58 @@ function getViewId() {
     return currentCurrency.currencyCode.toLowerCase();
 }
 
+/**
+ * URL safe formats query string
+ * @param {string} query - query string
+ * @returns {string} - URL safe formaed query string
+ */
+function formatSearchPhrase(query) {
+    if (!query) return '';
+    var str = unescape(query).trim();
+    return str ? encodeURI(query) : '*';
+}
+
+/**
+ * Get the User ID for the Bloomreach pixel
+ * @returns {string} - View ID
+ */
+function getUserId() {
+    var currentSession = request.getSession();
+    var currentCustomer = currentSession.getCustomer();
+    var userId = '';
+
+    if (currentCustomer.authenticated && currentCustomer.registered) {
+        userId = currentCustomer.ID;
+    }
+
+    return userId;
+}
+
+/**
+ * @description Getting values of Bloomreach _br_uid_2 cookie
+ * @param {string} strValue - decode string value of cookie
+ * @returns {Object} - values of _br_uid_2 cookie
+ */
+function getBrUidCookieValues(strValue) {
+    var Encoding = require('dw/crypto/Encoding');
+    var result = {};
+
+    if (empty(strValue)) return result;
+
+    var params = Encoding.fromURI(strValue).split(':');
+
+    params.forEach(function (item) {
+        var values = item.split('=');
+        result[values[0]] = values[1];
+    });
+    return result;
+}
+
 module.exports = {
     getPreference: getPreference,
     getProductAttributes: getProductAttributes,
-    getViewId: getViewId
+    getViewId: getViewId,
+    formatSearchPhrase: formatSearchPhrase,
+    getUserId: getUserId,
+    getBrUidCookieValues: getBrUidCookieValues
 };

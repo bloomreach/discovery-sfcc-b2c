@@ -96,7 +96,7 @@
                     </div>
                 </isif>
                 <iscomment> Bloomreach recommendation widget </iscomment>
-                <isinclude url="${URLUtils.url('Bloomreach-Widget', 'widget_id', 'nl5dw1jq', 'wty', 'category', 'cat_id', pdict.productSearch.category.id)}"/>                            
+                <isinclude url="${URLUtils.url('Bloomreach-Widget', 'widget_id', 'nl5dw1jq', 'wty', 'category', 'cat_id', (pdict.productSearch.category ? pdict.productSearch.category.id : null))}"/>                            
             </div>
             <!--- Content Grid --->
             <div class="tab-pane container" id="content-search-results-pane" role="tabpanel" aria-labelledby="articles-tab">

@@ -54,8 +54,16 @@ exports.afterFooter = function (pdict) {
             case 'search':
                 pixelDecorator.searchPage(pixelData, pdict);
                 break;
+            case 'content':
+                pixelDecorator.searchContent(pixelData, pdict);
+                break;
             case 'conversion':
-                pixelDecorator.confirmationPage(pixelData, pdict.order); // this is SFRA Order model, not SfCC native
+                var OrderMgr = require('dw/order/OrderMgr');
+                var pm = request.getHttpParameterMap();
+                var orderID = pm.get('orderID').getValue();
+                var orderToken = pm.get('orderToken').getValue();
+                var order = OrderMgr.getOrder(orderID, orderToken);
+                pixelDecorator.confirmationPage(pixelData, order); // this is SFRA Order model, not SfCC native
                 template = 'pixels/confirmationData';
                 break;
             default:

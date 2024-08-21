@@ -24,10 +24,9 @@ module.exports = function (object, product) {
         var currencyCode = currency.getCurrencyCode().toLowerCase();
 
         // Master product price
-        that.views[currencyCode] = {};
         var price = product.productSet ? product.priceModel.minPrice : product.priceModel.price;
         if (price.available) {
-            currencyCode = price.currencyCode.toLowerCase();
+            that.views[currencyCode] = {};
             that.views[currencyCode].attributes = {
                 price: price.value
             };
@@ -36,11 +35,14 @@ module.exports = function (object, product) {
         // Vatiant product price
         if (variants.length !== 0) {
             var variantsIter = variants.iterator();
-            that.views[currencyCode].variants = {};
             while (variantsIter.hasNext()) {
                 var variantProduct = variantsIter.next();
                 price = variantProduct.productSet ? variantProduct.priceModel.minPrice : variantProduct.priceModel.price;
                 if (price.available) {
+                    if (!Object.hasOwnProperty.call(that.views, currencyCode)) {
+                        that.views[currencyCode] = {};
+                    }
+                    that.views[currencyCode].variants = {};
                     that.views[currencyCode].variants[variantProduct.ID] = {
                         attributes: {
                             price: price.value

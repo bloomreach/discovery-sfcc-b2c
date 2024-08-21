@@ -22,7 +22,7 @@ function ProductModel(product, operation, productAttributes) {
         this.value = {};
 
         // Master product attributes
-        var mpAttr = new ProductAttributes(product, productAttributes, MULTY_CURRENCY_ATTR);
+        var mpAttr = new ProductAttributes(product, productAttributes, MULTY_CURRENCY_ATTR, null);
         this.value.attributes = mpAttr;
         // Variant product attributes
         var variants = product.getVariants();
@@ -32,11 +32,16 @@ function ProductModel(product, operation, productAttributes) {
             while (variantsIter.hasNext()) {
                 var variantProduct = variantsIter.next();
                 var variantProductId = variantProduct.ID;
-                var vpAttr = new ProductAttributes(variantProduct, productAttributes, MULTY_CURRENCY_ATTR);
+                var vpAttr = new ProductAttributes(variantProduct, productAttributes, MULTY_CURRENCY_ATTR, mpAttr);
                 this.value.variants[variantProductId] = {
                     attributes: vpAttr
                 };
             }
+        } else {
+            this.value.variants = {};
+            this.value.variants[product.ID] = {
+                attributes: {}
+            };
         }
         // Add product multicurrency as View
         if (MULTY_CURRENCY_VIEW) {

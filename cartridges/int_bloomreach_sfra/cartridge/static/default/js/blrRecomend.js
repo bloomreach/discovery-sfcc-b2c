@@ -159,7 +159,7 @@ function addPixelClickEvent(container) {
             wid: $widget.data('widget_id'),
             wty: $widget.data('wty'),
             wrid: $widget.data('wrid'),
-            wq: $widget.data('query') || '',
+            wq: $widget.data('query') || $widget.data('cat_id'),
             item_id: pid
         };
         // eslint-disable-next-line no-undef
@@ -195,7 +195,7 @@ module.exports = {
                     method: 'GET',
                     success: function (response) {
                         widgetViewData.wrid = $(response).data('wrid');
-                        widgetViewData.wq = $(response).data('query') || '';
+                        widgetViewData.wq = $(response).data('query') || $widget.data('cat_id');
 
                         var widgetContent = addPixelClickEvent(response);
                         $container.empty().append(widgetContent);
@@ -211,9 +211,22 @@ module.exports = {
             });
         });
     },
-    pixelViewEvent: function () {
-        $(document).ready(function () {
-            $('body').trigger('widget:update', null);
+    pixelViewPortEvent: function () {
+        $(document).on('resize scroll', function () {
+            let element = $('.recommends-container');
+            if (element.length) {
+                let viewportTop = $(window).scrollTop();
+                let viewportBottom = viewportTop + $(window).height();
+
+                let elementTop = element.offset().top;
+                let isVisible = elementTop < viewportBottom;
+                let trigered = element.data('trigered');
+
+                if (isVisible && !trigered) {
+                    element.data('trigered', true);
+                    $('body').trigger('widget:update', null);
+                }
+            }
         });
     }
 };
