@@ -27,6 +27,7 @@ function execute(parameters) {
 
     var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
+    var libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
 
     var uploadedFiles = [];
     var feedFileType;
@@ -63,7 +64,12 @@ function execute(parameters) {
 
         var sftp = new SFTPClient();
         sftp.setIdentity(keyRef);
-        sftp.connect('sftp-staging.connect.bloomreach.com', 'sandbox_astound', 'brxtest');
+
+        var sftpUrl = libBloomreach.getPreference('sftpUrl');
+        var domainKey = libBloomreach.getPreference('DomainKey');
+        var sftpPassKey = libBloomreach.getPreference('sftpPassKey');
+
+        sftp.connect(sftpUrl, domainKey, sftpPassKey);
 
         // go to the sftp destination folder
         var result = sftp.cd(remoteFeedPath);
