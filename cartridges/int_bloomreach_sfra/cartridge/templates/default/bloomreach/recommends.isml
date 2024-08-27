@@ -1,4 +1,4 @@
-<div class="recommends-container" data-url="${URLUtils.url('Bloomreach-Recommendations')}">
+<div class="recommends-container" data-trigered='false' data-url="${URLUtils.url('Bloomreach-Recommendations')}">
     <div class="recommends-widget"
         <isloop items="${Object.keys(pdict.widget)}" var="key">
             data-${key}=${pdict.widget[key]}  

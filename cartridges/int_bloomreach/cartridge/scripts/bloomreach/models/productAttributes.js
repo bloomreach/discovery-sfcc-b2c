@@ -136,13 +136,39 @@ function addMultiCurrencyPrice(target, product) {
 }
 
 /**
+ * Compare attributes value
+ * @param {Object} mProdAttr - Bloomreach master product attributes
+ * @param {string} attr - Bloomreach product attribute name
+ * @param {any} value - Bloomreach variant product attribute
+ * @returns {boolean} - comparison result
+ */
+function isAttrEqual(mProdAttr, attr, value) {
+    if (empty(mProdAttr)) return false;
+
+    if (empty(mProdAttr[attr]) && empty(value)) return true;
+
+    if (!mProdAttr || !Object.hasOwnProperty.call(mProdAttr, attr)) return false;
+
+    if ((mProdAttr[attr] instanceof Object) && (value instanceof Object)) {
+        try {
+            return JSON.stringify(mProdAttr[attr]) === JSON.stringify(value);
+        } catch (error) {
+            return false;
+        }
+    }
+
+    return mProdAttr[attr] === value;
+}
+
+/**
  * BloomreachProduct class that represents an Product Object of Bloomreach
  * @param {dw.order.Product} product - SFCC Product
  * @param {Object} productAttributes - config of Bloomreach Product Object
  * @param {boolean} isMultiCurrency - add multicurrency price
+ * @param {Object} mProdAttr - Bloomreach Master Product Attributes Object
  * @constructor
  */
-function ProductAttributes(product, productAttributes, isMultiCurrency) {
+function ProductAttributes(product, productAttributes, isMultiCurrency, mProdAttr) {
     var that = this;
     Object.keys(productAttributes).forEach(function (attr) {
         var attrVal = productAttributes[attr];
@@ -152,7 +178,7 @@ function ProductAttributes(product, productAttributes, isMultiCurrency) {
             var result = agregatedValueHanlders[attrVal]
                 ? agregatedValueHanlders[attrVal](product)
                 : getAttributeValue(product, attrVal);
-            if (result !== null && result !== undefined) {
+            if (result !== null && result !== undefined && !isAttrEqual(mProdAttr, attr, result)) {
                 that[attr] = result;
             }
         }

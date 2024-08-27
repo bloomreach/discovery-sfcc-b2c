@@ -21,33 +21,32 @@ function execute(parameters) {
     }
 
     // Bloomreach helper scripts
-    var { PRODUCT_FEED_LOCAL_PATH, PRODUCT_FEED_PREFIX, PRODUCT_FEED_PATH,
-        CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX, CONTENT_FEED_PATH,
+    var { PRODUCT_FEED_LOCAL_PATH, PRODUCT_FEED_PREFIX,
+        CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX,
         PRODUCT_SNAPSHOT_PREFIX } = require('*/cartridge/scripts/bloomreach/lib/constants');
 
     var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
+    var libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
 
     var uploadedFiles = [];
     var feedFileType;
     var localPathFile;
     var type = parameters.FeedType;
+    var remoteFeedPath = parameters.PathDestination;
 
     try {
         var pattern;
-        var remotePath;
         var localPath;
 
         switch (type) {
             case 'Product':
                 pattern = PRODUCT_FEED_PREFIX + '_' + Site.current.ID;
-                remotePath = PRODUCT_FEED_PATH;
                 localPath = PRODUCT_FEED_LOCAL_PATH;
                 feedFileType = 'products';
                 break;
             case 'Content':
                 pattern = CONTENT_FEED_PREFIX + '_' + Site.current.ID;
-                remotePath = CONTENT_FEED_PATH;
                 localPath = CONTENT_FEED_LOCAL_PATH;
                 feedFileType = 'items';
                 break;
@@ -65,13 +64,26 @@ function execute(parameters) {
 
         var sftp = new SFTPClient();
         sftp.setIdentity(keyRef);
-        sftp.connect('sftp-staging.connect.bloomreach.com', 'sandbox_astound', 'brxtest');
+
+        var sftpUrl = libBloomreach.getPreference('sftpUrl');
+        var domainKey = libBloomreach.getPreference('DomainKey');
+        var sftpPassKey = libBloomreach.getPreference('sftpPassKey');
+
+        sftp.connect(sftpUrl, domainKey, sftpPassKey);
 
         // go to the sftp destination folder
-        var result = sftp.cd(remotePath);
+        var result = sftp.cd(remoteFeedPath);
         if (!result) {
-            Logger.error('Problem testing sftp server. path: {0}', remotePath);
-            return new Status(Status.ERROR);
+            result = sftp.mkdir(remoteFeedPath);
+            if (!result) {
+                Logger.error('Problem testing sftp server. path: {0}', remoteFeedPath);
+                return new Status(Status.ERROR);
+            }
+            result = sftp.cd(remoteFeedPath);
+            if (!result) {
+                Logger.error('Problem testing sftp server. path: {0}', remoteFeedPath);
+                return new Status(Status.ERROR);
+            }
         }
 
         // get list of files
@@ -106,7 +118,7 @@ function execute(parameters) {
             var locale = (matches && matches.length === 2) ? matches[1] : '';
 
             uploadedFiles.push({
-                fileName: remotePath + '/' + file.name,
+                fileName: remoteFeedPath + '/' + file.name,
                 locale: locale
             });
             file.remove();

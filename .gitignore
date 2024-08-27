@@ -1,0 +1,21 @@
+# Base cartridges
+cartridges/app_storefront_base/
+cartridges/modules/
+cartridges/bm_app_storefront_base/
+
+# Static bundle files
+cartridges/*/cartridge/static/
+
+# VS Code Typescript Engine
+jsconfig.json
+dw.json
+.vscode
+
+# NPM packages
+node_modules/
+package-lock.json
+
+# Temporary folders and files
+.DS_Store
+workspace/
+*.log

@@ -83,7 +83,14 @@
 		              		"Content"
 		            	]
 		          	}
-				}]
+				}, {
+					"@name":"PathDestination",
+					"@type":"string",
+					"@required":"true",
+					"@trim":"true",
+					"description":"Enable Upload of Product or Content Feed.",
+					"default-value":"astound/product_export"
+			  	}]
 		    },
 		    "status-codes": {
 		    	"status":  [{

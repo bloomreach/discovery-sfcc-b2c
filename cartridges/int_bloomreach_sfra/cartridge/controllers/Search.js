@@ -80,13 +80,13 @@ server.replace('UpdateGrid', function (req, res, next) {
  * @param {serverfunction} - get
  */
 server.replace('Content', cache.applyDefaultCache, consentTracking.consent, function (req, res, next) {
-    var searchHelper, contentSearch;
-    
+    var contentSearch;
+
     if (libBloomreach.getPreference('SearchEnabled')) {
-        searchHelper = require('*/cartridge/scripts/helpers/blrSearchHelpers');
-        contentSearch = searchHelper.сontentSearch(req);
+        var contentSearchHelper = require('*/cartridge/scripts/helpers/blrContentSearchHelper');
+        contentSearch = contentSearchHelper.сontentSearch(req);
     } else {
-        searchHelper = require('*/cartridge/scripts/helpers/searchHelpers');
+        var searchHelper = require('*/cartridge/scripts/helpers/searchHelpers');
         contentSearch = searchHelper.setupContentSearch(req.querystring);
     }
 

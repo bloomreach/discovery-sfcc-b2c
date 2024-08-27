@@ -8,6 +8,76 @@
  * @description Provide data for each pixel type. Can be customized to fit Merchant's needs
  */
 
+/**
+ * Get top level product ID
+ * @param {dw.catalog.Product} product - produet
+ * @returns {string} - product ID
+ */
+function getTopLevelProductId(product) {
+    var id = product.ID;
+
+    if (product.variant) {
+        id = product.masterProduct.ID;
+    }
+
+    return id;
+}
+
+/**
+ * Get breadcrumb of category tree
+ * @param {string} categoryId -category ID
+ * @returns {string} - breadcrumb of category tree delimited by pipe ( | character)
+ */
+function getCategoryBreadcrumb(categoryId) {
+    var CatalogMgr = require('dw/catalog/CatalogMgr');
+    var currentCat = categoryId;
+    var breadcrumb = [];
+
+    while (currentCat && currentCat !== 'root') {
+        var category = CatalogMgr.getCategory(currentCat);
+        breadcrumb.push(category.displayName);
+        currentCat = category.parent.ID;
+    }
+    return breadcrumb.reverse().join('|');
+}
+
+/**
+ * Get content name by name ID
+ * @param {number} id - content ID
+ * @returns {string} - content name
+ */
+function getContentName(id) {
+    var ContentMgr = require('dw/content/ContentMgr');
+    var PageMgr = require('dw/experience/PageMgr');
+
+    var page = PageMgr.getPage(id);
+    var name = '';
+
+    if (page) {
+        name = page.name;
+    } else {
+        var apiContent = ContentMgr.getContent(id);
+        if (apiContent) {
+            name = apiContent.name;
+        }
+    }
+
+    return name;
+}
+
+/**
+ * Get catalog names from http request
+ * @returns {string} - Json string of catalog names array
+ */
+function getCatalogNames() {
+    var cgid = request.getHttpParameterMap().get('cgid').stringValue;
+    var result = [];
+    if (cgid) {
+        result = [{ name: cgid }];
+    }
+    return JSON.stringify(result);
+}
+
 exports.globalPage = function (pixelData, pdict) {
     var libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
     var blrPageType = require('~/cartridge/scripts/customizable/blrPageType');
@@ -42,7 +112,7 @@ exports.globalPage = function (pixelData, pdict) {
             enumerable: true
         },
         user_id: {
-            value: session.customer.ID,
+            value: libBloomreach.getUserId(),
             enumerable: true
         },
         tms: {
@@ -53,9 +123,11 @@ exports.globalPage = function (pixelData, pdict) {
 };
 
 exports.productPage = function (pixelData, pdict) {
+    var ProductMgr = require('dw/catalog/ProductMgr');
+    var product = ProductMgr.getProduct(pdict.product.id);
     Object.defineProperties(pixelData, {
         prod_id: {
-            value: pdict.product.id,
+            value: getTopLevelProductId(product),
             enumerable: true
         },
         prod_name: {
@@ -63,20 +135,22 @@ exports.productPage = function (pixelData, pdict) {
             enumerable: true
         },
         sku: {
-            value: 'TODO: Clarify the value',
+            value: pdict.product.id,
             enumerable: true
         }
     });
 };
 
 exports.categoryPage = function (pixelData, pdict) {
+    var catId = request.getHttpParameterMap().get('cgid');
+
     Object.defineProperties(pixelData, {
         cat_id: {
             value: request.getHttpParameterMap().get('cgid'),
             enumerable: true
         },
         cat: {
-            value: 'TODO: Get from Catalog API',
+            value: getCategoryBreadcrumb(catId),
             enumerable: true
         }
     });
@@ -89,22 +163,40 @@ exports.searchPage = function (pixelData, pdict) {
     });
 };
 
+exports.searchContent = function (pixelData, pdict) {
+    var cid = request.getHttpParameterMap().get('cid').stringValue;
+    Object.defineProperty(pixelData, 'catalogs', {
+        value: getCatalogNames(),
+        enumerable: true
+    });
+    Object.defineProperty(pixelData, 'item_id', {
+        value: cid,
+        enumerable: true
+    });
+    Object.defineProperty(pixelData, 'item_name', {
+        value: getContentName(cid),
+        enumerable: true
+    });
+};
+
 /**
  * @description Get order product data
  * @param {Object} order - SFRA order model
  * @returns {Object} mapped items data
  */
 function getOrderItems(order) {
-    var itemsArray = order.items.items.map(
-    item=>{
+    var collections = require('*/cartridge/scripts/util/collections');
+    var productLineItems = order.getProductLineItems();
+
+    var itemsArray = collections.map(productLineItems, function (pli) {
         return {
-            prod_id: item.id,
-            // sku: 'sku1234',
-            name: item.productName,
-            quantity: item.quantity,
-            price: item.priceTotal.price,
-            is_gift: item.isGift,
-            is_bonus_product: item.isBonusProductLineItem
+            prod_id: getTopLevelProductId(pli.product),
+            sku: pli.productID,
+            name: pli.productName,
+            quantity: pli.quantityValue,
+            price: pli.basePrice.value,
+            is_gift: pli.gift,
+            is_bonus_product: pli.bonusProductLineItem
         };
     });
 
@@ -125,11 +217,11 @@ exports.confirmationPage = function (pixelData, order) {
             enumerable: true
         },
         order_id: {
-            value: order.orderNumber,
+            value: order.orderNo,
             enumerable: true
         },
         basket_value: {
-            value: order.priceTotal,
+            value: order.totalGrossPrice.value,
             enumerable: true
         },
         basket: {

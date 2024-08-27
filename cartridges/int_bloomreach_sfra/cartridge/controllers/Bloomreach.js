@@ -52,13 +52,24 @@ server.get('Widget', function (req, res, next) {
 });
 
 server.get('Recommendations', function (req, res, next) {
-    var bloomreachServiceHelper = require('*/cartridge/scripts/services/blrServiceHelper');
-    const uuid = require('dw/util/UUIDUtils').createUUID();
+    const libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
+    const bloomreachServiceHelper = require('*/cartridge/scripts/services/blrServiceHelper');
 
     var recommendationParams = getWidgetParams(req.querystring);
-    recommendationParams.requestId = request.requestID;
+    recommendationParams.request_id = request.requestID;
     recommendationParams.url = request.httpURL.toString();
-    recommendationParams.brUid2 = encodeURI(uuid);
+    recommendationParams.ref_url = request.httpReferer || '';
+
+    // Add Uid of first-party cookie
+    var cookieAccepted = request.getHttpCookies()['_br_uid_2'];
+    var cookieValue = cookieAccepted ? cookieAccepted.getValue() : null;
+    if (cookieValue) {
+        recommendationParams['_br_uid_2'] = cookieValue;
+    }
+
+    if (libBloomreach.getPreference('MiltiCurrency').value === 'priceAsView') {
+        recommendationParams.view_id = libBloomreach.getViewId();
+    }
 
     var apiRecommendations = bloomreachServiceHelper.getRecommendations(recommendationParams);
 
