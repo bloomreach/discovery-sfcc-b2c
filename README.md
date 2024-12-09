@@ -1,5 +1,6 @@
 # Description
 Bloomreach is a cloud-based e-commerce experience platform and B2B service specializing in marketing automation, product discovery, and content management systems.
+The Bloomreach SalesForce connector is a community-supported tool. It is fully Open-Sourced and open to contributions.
 
 # Version
 ## [23.1.0] - 2023 August
@@ -33,7 +34,7 @@ or in Google Docs:
 
 # Contributing
 
-Maintaned by cartridge team, but you can submit a PR for review by team.
+The Bloomreach SalesForce connector is a community-supported tool. You can submit a PR for our team to review.
 
 ## Contacts
 
