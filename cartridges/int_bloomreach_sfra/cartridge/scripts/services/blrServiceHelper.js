@@ -63,6 +63,12 @@ function performSearchSuggestions(searchDetails) {
     service.setRequestMethod('GET');
     service.addHeader('Content-Type', 'application/json');
 
+    var cookieAccepted = request.getHttpCookies()['_br_uid_2'];
+    var cookieValue = cookieAccepted ? cookieAccepted.getValue() : null;
+    if (cookieValue) {
+        searchDetails['_br_uid_2'] = cookieValue;
+    }
+
     var baseUrl = service.getURL();
     var accountId = libBloomreach.getPreference('AccountID');
     var domainKey = libBloomreach.getPreference('DomainKey');
