@@ -84,6 +84,13 @@ function getProductApiSearch(httpParams) {
         }
     };
 
+
+    var cookieAccepted = request.getHttpCookies()['_br_uid_2'];
+    var cookieValue = cookieAccepted ? cookieAccepted.getValue() : null;
+    if (cookieValue) {
+        searchDetails['_br_uid_2'] = cookieValue;
+    }
+
     var facets = [];
     if (searchQuery && searchQuery !== '*') {
         searchDetails.search_type = 'keyword';
@@ -174,6 +181,12 @@ function getContentApiSearch(httpParams) {
         rows: httpParams.sz || DEFAULT_PAGE_SIZE,
         start: httpParams.startingPage || 0
     };
+
+    var cookieAccepted = request.getHttpCookies()['_br_uid_2'];
+    var cookieValue = cookieAccepted ? cookieAccepted.getValue() : null;
+    if (cookieValue) {
+        searchDetails['_br_uid_2'] = cookieValue;
+    }
 
     applyRelevanceBySegmentParameter(searchDetails);
 
