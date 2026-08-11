@@ -25,7 +25,7 @@ function execute(parameters) {
         CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX,
         PRODUCT_SNAPSHOT_PREFIX } = require('*/cartridge/scripts/bloomreach/lib/constants');
 
-    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
+    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelperV3');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
     var libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
 
@@ -131,13 +131,29 @@ function execute(parameters) {
     }
 
     // Submit file list for Bloomreach data update
+    var environment = serviceHelper.getEnvironment();
+
     for (var j = 0; j < uploadedFiles.length; j++) {
         var submitResult = serviceHelper.sendFeedData('PUT', [uploadedFiles[j].fileName], feedFileType, uploadedFiles[j].locale);
         if (!submitResult.isOk()) {
             Logger.error('Submit file error: ' + submitResult.msg);
             return new Status(Status.ERROR);
         }
-        blmHelper.saveIdToCustomObj(submitResult.object.jobId);
+
+        // v3 wraps the job ID as { data: { job_id: '...' } }
+        var responseData = submitResult.object && submitResult.object.data;
+        var jobId = responseData ? responseData.job_id : null;
+
+        if (!jobId) {
+            Logger.error('no job_id');
+            return new Status(Status.ERROR);
+        }  
+
+        blmHelper.saveIdToCustomObj(jobId, {
+            type: feedFileType,
+            locale: uploadedFiles[j].locale,
+            environment: environment
+        });
     }
 
     // Remove old Snapshot file and rename a new one

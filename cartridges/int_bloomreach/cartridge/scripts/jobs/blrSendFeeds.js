@@ -22,7 +22,7 @@ function execute(parameters) {
     var { PRODUCT_FEED_LOCAL_PATH, PRODUCT_FEED_PREFIX,
         CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX }
         = require('*/cartridge/scripts/bloomreach/lib/constants');
-    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
+    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelperV3');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
 
     try {
@@ -55,6 +55,7 @@ function execute(parameters) {
 
         // Send data to API
         var FileReader = require('dw/io/FileReader');
+        var environment = serviceHelper.getEnvironment();
 
         for (var i = 0; i < localFiles.length; i++) {
             var file = localFiles[i];
@@ -83,8 +84,23 @@ function execute(parameters) {
                 return new Status(Status.ERROR);
             }
 
+            // v3 wraps the job ID as { data: { job_id: '...' } }
+            var responseData = result.object && result.object.data;
+            var jobId = responseData ? responseData.job_id : null;
+
+            if (!jobId) {
+                Logger.error('no job_id');
+                fileReader.close();
+                file.remove();
+                return new Status(Status.ERROR);
+            }    
+
             // Save jobID to the custom object
-            blmHelper.saveIdToCustomObj(result.object.jobId);
+            blmHelper.saveIdToCustomObj(jobId, {
+                type: feedFileType,
+                locale: locale,
+                environment: environment
+            });
 
             fileReader.close();
             file.remove();

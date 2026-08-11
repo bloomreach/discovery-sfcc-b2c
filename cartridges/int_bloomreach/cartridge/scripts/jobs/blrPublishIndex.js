@@ -3,7 +3,7 @@
 // API Objects
 var Site = require('dw/system/Site');
 var Status = require('dw/system/Status');
-var Logger = require('dw/system/Logger').getLogger('Bloomreach', 'blrUploadFeed.js');
+var Logger = require('dw/system/Logger').getLogger('Bloomreach', 'blrPublishIndex.js');
 var CustomObjectMgr = require('dw/object/CustomObjectMgr');
 
 /**
@@ -20,7 +20,7 @@ function execute(parameters) {
     }
 
     // Bloomreach helper scripts
-    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
+    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelperV3');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
 
     var allBlmImportJobsIdList = CustomObjectMgr.getAllCustomObjects('blm_FeedJobId');
@@ -29,12 +29,18 @@ function execute(parameters) {
     var counter = allBlmImportJobsIdList.getCount();
     while (allBlmImportJobsIdList.hasNext()) {
         var blmImportJobsId = allBlmImportJobsIdList.next();
-        submitResult = serviceHelper.getJobStatus(blmImportJobsId.custom.jobId);
+        submitResult = serviceHelper.getJobStatus(blmImportJobsId.custom.jobId, 
+                    blmImportJobsId.custom.type,
+                    blmImportJobsId.custom.locale,
+                    blmImportJobsId.custom.environment);
         if (submitResult.ok) {
-            if (submitResult.object.status === 'failed'
-                || submitResult.object.status === 'skipped'
-                || submitResult.object.status === 'killed'
-                || submitResult.object.status === 'success') {
+            var responseData = submitResult.object && submitResult.object.data && submitResult.object.data.job;
+            var status = responseData ? responseData.status : null;
+
+            if (status === 'failed'
+                || status === 'skipped'
+                || status === 'killed'
+                || status === 'success') {
                 CustomObjectMgr.remove(blmImportJobsId);
                 counter--;
             }
@@ -59,10 +65,25 @@ function execute(parameters) {
             siteLocalesSize = siteLocales.length;
         }
 
+        var environment = serviceHelper.getEnvironment();
+
         for (var i = 0; i < siteLocalesSize; i++) {
             submitResult = serviceHelper.publishIndex(siteLocales[i], type);
             if (submitResult.isOk()) {
-                blmHelper.saveIdToCustomObj(submitResult.object.jobId);
+                // v3 wraps the job ID as { data: { job_id: '...' } }
+                var responseData = submitResult.object && submitResult.object.data;
+                var jobId = responseData ? responseData.job_id : null;
+
+                if (!jobId) {
+                    Logger.error('Publish Index error: no job_id in response for locale {0}', siteLocales[i]);
+                    return new Status(Status.ERROR);
+                }
+
+                blmHelper.saveIdToCustomObj(jobId, {
+                    type: type,
+                    locale: siteLocales[i],
+                    environment: environment
+                });
             } else {
                 Logger.error('Publish Index error: ' + submitResult.msg);
                 return new Status(Status.ERROR);
