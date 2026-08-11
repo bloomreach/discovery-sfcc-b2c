@@ -22,7 +22,7 @@ function execute(parameters) {
     var { PRODUCT_FEED_LOCAL_PATH, PRODUCT_FEED_PREFIX,
         CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX }
         = require('*/cartridge/scripts/bloomreach/lib/constants');
-    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
+    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelperV3');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
 
     try {
@@ -55,6 +55,7 @@ function execute(parameters) {
 
         // Send data to API
         var FileReader = require('dw/io/FileReader');
+        var environment = serviceHelper.getEnvironment();
 
         for (var i = 0; i < localFiles.length; i++) {
             var file = localFiles[i];
@@ -77,14 +78,19 @@ function execute(parameters) {
             }
 
             if (!result.isOk()) {
-                Logger.error('Problem sanding product Data: ' + result.msg);
+                Logger.error('Problem sanding product Data: ' + (result.errorMessage || result.msg));
                 fileReader.close();
                 file.remove();
                 return new Status(Status.ERROR);
             }
 
-            // Save jobID to the custom object
-            blmHelper.saveIdToCustomObj(result.object.jobId);
+            // Save jobID to the custom object, with the context the v3 status endpoint needs
+            blmHelper.saveIdToCustomObj(result.object.jobId, {
+                type: feedFileType,
+                locale: locale,
+                environment: environment,
+                siteId: Site.current.ID
+            });
 
             fileReader.close();
             file.remove();

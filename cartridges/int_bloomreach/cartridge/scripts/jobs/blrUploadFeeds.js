@@ -25,7 +25,7 @@ function execute(parameters) {
         CONTENT_FEED_LOCAL_PATH, CONTENT_FEED_PREFIX,
         PRODUCT_SNAPSHOT_PREFIX } = require('*/cartridge/scripts/bloomreach/lib/constants');
 
-    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelper');
+    var serviceHelper = require('*/cartridge/scripts/bloomreach/services/serviceHelperV3');
     var blmHelper = require('*/cartridge/scripts/bloomreach/helpers/blmHelper');
     var libBloomreach = require('*/cartridge/scripts/bloomreach/lib/libBloomreach');
 
@@ -131,13 +131,23 @@ function execute(parameters) {
     }
 
     // Submit file list for Bloomreach data update
+    var environment = serviceHelper.getEnvironment();
+
     for (var j = 0; j < uploadedFiles.length; j++) {
         var submitResult = serviceHelper.sendFeedData('PUT', [uploadedFiles[j].fileName], feedFileType, uploadedFiles[j].locale);
         if (!submitResult.isOk()) {
-            Logger.error('Submit file error: ' + submitResult.msg);
+            Logger.error('Submit file error: ' + (submitResult.errorMessage || submitResult.msg));
             return new Status(Status.ERROR);
         }
-        blmHelper.saveIdToCustomObj(submitResult.object.jobId);
+
+        // The environment is recorded rather than re-read at poll time, so that a job submitted
+        // to staging is still polled against staging if the preference is switched in between.
+        blmHelper.saveIdToCustomObj(submitResult.object.jobId, {
+            type: feedFileType,
+            locale: uploadedFiles[j].locale,
+            environment: environment,
+            siteId: Site.current.ID
+        });
     }
 
     // Remove old Snapshot file and rename a new one
