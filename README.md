@@ -358,8 +358,8 @@ Jobs*). Typical setup:
 
 | Job | Steps | When |
 | --- | --- | --- |
-| **Bloomreach Product Feed** | Product export (FullFeed) → deliver | Periodic full refresh (e.g. nightly). |
-| **Bloomreach Delta Product Feed** | Product export (DeltaFeed) → deliver | Frequent incremental updates. |
+| **Bloomreach Product Feed** | Product export (FullFeed) → Upload (SFTP) → Send feed to API (PUT) | Periodic full refresh (e.g. nightly). |
+| **Bloomreach Delta Product Feed** | Product export (DeltaFeed) → Send feed to API (PATCH) | Frequent incremental updates. |
 | **Bloomreach Content Feed** | Content export → deliver (SFTP) | Content refresh. |
 | **Bloomreach Publish Index** | Poll status → publish | Catalog Management flow. |
 
@@ -367,9 +367,21 @@ Each step has an **Enabled** flag and a **FeedType** (Product/Content). Delivery
 steps also take an **UpdateType** (PUT = full, PATCH = delta) which maps to Data
 Hub `update_mode`. Assign each job the correct site context and schedule.
 
+> **Both product jobs need a `Send feed to API` step for Data Hub.** Product
+> delivery to Data Hub happens in the `Send feed to API` step
+> (`custom.Bloomreach-Send`) — **not** the SFTP `Upload` step, which no-ops for
+> products in Data Hub mode. The **Full Feed** job must include this step
+> (`FeedType = Product`, `UpdateType = PUT`) and the **Delta Feed** job must
+> include it (`UpdateType = PATCH`); a Full Feed job with only export + SFTP
+> upload generates the feed and delivers nothing. Both are wired in the shipped
+> `metadata/bloomreach.zip` jobs; existing customer job configs must add the
+> Full Feed `Send` step manually.
+
 To operate in **Data Hub** mode: keep the same export step, set
-`ProductFeedDeliveryMode = DataHub`, and the delivery step routes to Data Hub
-automatically. The SFTP upload step becomes a no-op for products.
+`ProductFeedDeliveryMode = DataHub`, and the `Send feed to API` step routes to
+Data Hub automatically. The SFTP upload step becomes a no-op for products. See
+[`documentation/DataHub-Delivery.md`](documentation/DataHub-Delivery.md) for full
+details.
 
 ---
 

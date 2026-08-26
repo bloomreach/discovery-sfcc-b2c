@@ -142,6 +142,28 @@ function beforeStep(parameters) {
         throw new Error('Data Hub delivery does not support priceAsView multi-currency. Use priceAsAttr.');
     }
 
+    // Fail fast on incomplete Data Hub configuration. Without these, delivery fails
+    // deep inside the send step with a confusing HTTP-level error (malformed URL,
+    // 401, etc.). Surface a clear, specific message at job start instead.
+    if (deliveryMode === 'DataHub') {
+        var requiredDataHubPrefs = [
+            'DataHubBaseUrl',
+            'DataHubWorkspaceId',
+            'DataHubApiTokenName',
+            'DataHubApiTokenSecret'
+        ];
+        var missingDataHubPrefs = requiredDataHubPrefs.filter(function (prefName) {
+            var value = libBlr.getPreference(prefName);
+            return value === null || value === undefined || String(value).trim() === '';
+        });
+        if (missingDataHubPrefs.length) {
+            var missingList = missingDataHubPrefs.map(function (prefName) { return 'blr_' + prefName; }).join(', ');
+            Logger.error('Data Hub delivery is enabled but required configuration is missing: {0}. '
+                + 'Populate these site preferences before running the feed job.', missingList);
+            throw new Error('Data Hub delivery is enabled but required configuration is missing: ' + missingList + '.');
+        }
+    }
+
     currentSites = Site.getCurrent();
     currentLocale = request.getLocale();
 
@@ -306,11 +328,17 @@ function write(items) {
             snapshotFileWriter.writeLine(line);
         }
 
-        // Write to localized Bloomreach files
+        // Write to localized Bloomreach files.
+        // A delta payload (obj.product) only carries keys for the locale(s) that
+        // actually changed, so only write a line for locales that have an entry.
+        // Writing obj.product[locale] unconditionally emits writeLine(undefined) -
+        // a malformed line - for untouched locales, which dataHubTransform then
+        // rejects on JSON.parse, breaking that locale's delta feed.
         if (obj.product) {
             fileStorage.forEach(function (item) { // eslint-disable-line no-loop-func
-                line = obj.product[item.localeName];
-                item.fileWriter.writeLine(line);
+                if (Object.prototype.hasOwnProperty.call(obj.product, item.localeName)) {
+                    item.fileWriter.writeLine(obj.product[item.localeName]);
+                }
             });
         }
     }

@@ -53,6 +53,17 @@ matching how `blr_sftpPassKey` is handled today. `dw.crypto.KeyRef` is **not**
 used here — that mechanism is specific to the SFTP private key in the crypto
 keystore and does not apply to an HTTP Basic Auth token pair.
 
+> **Known limitation (secret storage):** `blr_DataHubApiTokenSecret` is defined as a
+> plain, unmasked `string` custom attribute, so its value is visible in Business
+> Manager. This is **consistent with existing connector convention** — `blr_sftpPassKey`
+> is stored the same way — and is therefore not a new regression. It does, however, now
+> guard a full API credential rather than an SFTP passphrase. Switching both
+> `blr_sftpPassKey` and `blr_DataHubApiTokenSecret` to SFCC's `password` attribute type
+> (which masks the value in the BM UI) is a recommended **follow-up**. It is deliberately
+> **not** done on this branch: changing the attribute type on preferences already
+> deployed with plain string values on live sites risks breaking those deployments, and
+> that migration needs its own validation.
+
 ## What happens in Data Hub mode
 
 - **`blrSendFeeds` (product):** each generated JSONL feed file is transformed to
@@ -65,6 +76,20 @@ keystore and does not apply to an HTTP Basic Auth token pair.
 - **`blrUploadFeeds` (product):** skipped with a log message — Data Hub is
   HTTP-only and has no SFTP ingestion path.
 - **Snapshot / delta diffing** in `blrProductExport` is unchanged.
+
+### Required job steps (Full Feed)
+
+Because the SFTP upload step (`custom.Bloomreach-Upload`) intentionally no-ops for
+products in Data Hub mode, **the Full Feed job must include a `Send feed to API`
+step (`custom.Bloomreach-Send`, `FeedType = Product`, `UpdateType = PUT`)** — otherwise
+a full-feed run generates the feed file and delivers it nowhere. The Delta Feed job
+already carries this step (`UpdateType = PATCH`).
+
+Both steps are safe to run regardless of delivery mode: `blrSendFeeds.js` branches
+internally on `ProductFeedDeliveryMode` and is a no-op-safe file loop when there is
+nothing to send. This step was added to the shipped `Bloomreach Product Feed` job in
+`metadata/bloomreach.zip → bloomreach/jobs.xml`; existing customer job configurations
+must add it manually. (See "Add the missing Send step to the Full Feed job".)
 
 ### Delivery routing (direct body vs. file upload)
 

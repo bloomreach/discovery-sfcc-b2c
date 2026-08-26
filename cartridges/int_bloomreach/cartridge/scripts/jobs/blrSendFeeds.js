@@ -150,7 +150,7 @@ function execute(parameters) {
                 if (dhOutcome.jobId) {
                     Logger.info('Data Hub records-update job submitted: {0} (collection "{1}", mode {2})',
                         dhOutcome.jobId, collectionName, dataHubUpdateMode);
-                    blmHelper.saveIdToCustomObj(dhOutcome.jobId);
+                    blmHelper.saveIdToCustomObj(dhOutcome.jobId, 'datahub');
                 } else {
                     Logger.warn('Data Hub response missing job id (collection "{0}")', collectionName);
                 }
@@ -179,8 +179,8 @@ function execute(parameters) {
                     return new Status(Status.ERROR);
                 }
 
-                // Save jobID to the custom object
-                blmHelper.saveIdToCustomObj(result.object.jobId);
+                // Save jobID to the custom object (Catalog Management API)
+                blmHelper.saveIdToCustomObj(result.object.jobId, 'catalog');
 
                 fileReader.close();
                 file.remove();

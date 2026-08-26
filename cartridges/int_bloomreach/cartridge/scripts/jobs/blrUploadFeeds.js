@@ -39,6 +39,13 @@ function execute(parameters) {
     // When product feeds are delivered via Data Hub, this SFTP upload step does not
     // apply to products and is skipped (delivery happens in the Bloomreach-Send step).
     // Content SFTP delivery is unaffected regardless of this preference.
+    //
+    // DO NOT reduce this to `if (type === 'Product')`. The guard MUST stay gated on
+    // ProductFeedDeliveryMode === 'DataHub'. Dropping the preference check hardcodes
+    // "always skip SFTP for product feeds", which silently breaks product delivery
+    // for any site still using the legacy Catalog-Management-via-SFTP path. The
+    // "nothing gets sent" symptom that tempts this change is fixed by adding the
+    // Bloomreach-Send step to the Full Feed job (see jobs.xml), not by widening this guard.
     if (type === 'Product' && libBloomreach.getPreference('ProductFeedDeliveryMode') === 'DataHub') {
         Logger.info('Product feed delivery mode is Data Hub (HTTP-only); skipping SFTP upload step for products.');
         return new Status(Status.OK);
@@ -146,7 +153,7 @@ function execute(parameters) {
             Logger.error('Submit file error: ' + submitResult.msg);
             return new Status(Status.ERROR);
         }
-        blmHelper.saveIdToCustomObj(submitResult.object.jobId);
+        blmHelper.saveIdToCustomObj(submitResult.object.jobId, 'catalog');
     }
 
     // Remove old Snapshot file and rename a new one

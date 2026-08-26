@@ -7,7 +7,7 @@
     "node": ">=4.0"
   },
   "scripts": {
-    "test": "sgmf-scripts --test test/unit/**/*.js",
+    "test": "sgmf-scripts --test 'test/unit/**/*.js'",
     "test:integration": "sgmf-scripts --integration 'test/integration/**/*.js'",
     "compile:scss": "sgmf-scripts --compile css",
     "compile:js": "sgmf-scripts --compile js",
