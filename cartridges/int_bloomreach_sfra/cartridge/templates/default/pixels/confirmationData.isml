@@ -1,0 +1,29 @@
+<iscontent type="text/html" charset="UTF-8" compact="true"/>
+<script>
+var br_data = br_data || {};
+// Global tracking parameters
+br_data.acct_id = "${pdict.pixelData.acct_id}"; 
+br_data.ptype = "conversion";
+br_data.title = "${pdict.pixelData.title}";
+br_data.domain_key = "${pdict.pixelData.domain_key}";
+br_data.user_id = "${pdict.pixelData.user_id}";
+br_data.view_id = "${pdict.pixelData.view_id}";
+br_data.tms = "";
+
+br_data.is_conversion = 1;
+br_data.basket_value = "${pdict.pixelData.basket_value}";
+br_data.order_id = "${pdict.pixelData.order_id}";
+br_data.currency = "${pdict.pixelData.currency}";
+
+br_data.basket = <isprint value="${pdict.pixelData.basket}" encoding="htmlsinglequote"/>;
+
+(function() {
+var brtrk = document.createElement('script');
+brtrk.type = 'text/javascript';
+brtrk.async = true;
+brtrk.src = "//cdn.brcdn.com/v1/br-trk-${pdict.pixelData.acct_id}.js";
+
+var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(brtrk, s);
+})();
+</script>

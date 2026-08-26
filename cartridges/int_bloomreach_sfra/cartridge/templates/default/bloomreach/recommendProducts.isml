@@ -1,0 +1,14 @@
+<div class="recommends-widget"
+    <isloop items="${Object.keys(pdict.recommendations.widget)}" var="key">
+        data-${key}=${pdict.recommendations.widget[key]}  
+    </isloop>
+>
+    <h2>${Resource.msg('title.recommendations','search',null)}</h2>
+    <div class="row recommends-product-grid">
+        <isloop items="${pdict.recommendations.productIds}" var="product">
+            <div class="col-6 col-sm-4">
+                <isinclude url="${URLUtils.url('Tile-Show', 'pid', product.pid, 'swatches', true, 'ratings', true)}" />
+            </div>
+        </isloop>
+    </div>
+</div>

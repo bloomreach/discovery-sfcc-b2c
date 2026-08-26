@@ -1,0 +1,40 @@
+<isobject object="${pdict.apiProductSearch}" view="none">
+    <isif condition="${!!pdict.productSearch.autoCorrectQuery}">
+        <isinclude template="search/autoCorrectQuery" />
+    </isif>
+    <isif condition="${pdict.productSearch.productIds.length > 0}">
+        <p>
+            <span class="search-result-count">
+                ${Resource.msgf(pdict.productSearch.searchKeywords ? 'label.resultsfor' : 'label.results', 'search', null, pdict.productSearch.count)}
+            </span>
+            <span class="search-keywords">
+                ${pdict.productSearch.searchKeywords ? decodeURI(pdict.productSearch.searchKeywords) : ''}
+            </span>
+        </p>
+    </isif>
+
+    <isif
+        condition="${pdict.productSearch.isSearchSuggestionsAvailable}">
+        <isloop items="${pdict.productSearch.suggestionPhrases}" alias="phrase" status="loopState">
+            <isif condition="${loopState.first}">
+                <p>
+                    <span>${Resource.msg('label.didyoumean', 'search', null)}</span>
+                    <a class="link" title="${phrase.value}" href="${phrase.url}">${phrase.value}</a>
+                </p>
+                <isif condition="${!loopState.last}">
+                    <p>
+                        <span>${Resource.msg('label.ormaybe', 'search', null)}</span>
+                </isif>
+                <iselse>
+                    <a class="link" title="${phrase.value}" href="${phrase.url}">${phrase.value}</a>
+                    <isif condition="${loopState.last}">
+                        </p>
+                        <iselse>,&nbsp;
+                    </isif>
+            </isif>
+        </isloop>
+    </isif>
+    <isif condition="${!pdict.productSearch.productIds.length}">
+        <isinclude template="search/noResultsProduct" />
+    </isif>
+</isobject>
