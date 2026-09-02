@@ -234,7 +234,7 @@ function getDataHubConfig() {
  * @returns {dw.svc.Result} - service response
  */
 function sendDataHubFeedData(file, updateMode, collectionName) {
-    var serviceDataHubDefinition = require('*/cartridge/scripts/bloomreach/services/serviceDataHubDefinition');
+    var serviceDataHubDefinition = require('*/cartridge/scripts/bloomreach/services/serviceDataHubRecordsDefinition');
     var cfg = getDataHubConfig();
 
     var service = serviceDataHubDefinition.init();
